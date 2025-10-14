@@ -21,37 +21,48 @@ struct ContentView: View {
 
     let buttons = [
         ["7", "8", "9", "÷"],
-        ["4", "5", "6", "×"],
-        ["1", "2", "3", "-"],
-        ["0", "C", "=", "+"]
+        ["4", "5", "6", "x"],
+        ["1", "2", "3", "+"],
+        ["0", "C", "="]
     ]
 
     var body: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            Text("0%：\(inputText)")
-            Text("8%：\(tax8)")
-            Text("10%：\(tax10)")
+
+        VStack() {
             Spacer()
 
-            // ボタン部分
-            ForEach(buttons, id: \.self) { row in
-                HStack(spacing: 12) {
-                    ForEach(row, id: \.self) { label in
-                        Button(action: {
-                            buttonTapped(label)
-                        }) {
-                            Text(label)
-                                .font(.title)
-                                .frame(width: 70, height: 70)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(35)
+            //金額表示スペース
+            VStack(alignment: .leading, spacing: 30) {
+                Text("　  0%：\(inputText)")
+                Text("　  8%：\(tax8)")
+                Text("　10%：\(tax10)")
+            }
+            .font(.system(size: 36))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            //金額表示スペース
+
+            Spacer()
+
+            //ボタンスペース
+            VStack(spacing: 10) { // ← 縦の間隔を狭く
+                ForEach(buttons, id: \.self) { row in
+                    HStack(spacing: 10) {
+                        ForEach(row, id: \.self) { label in
+                            Button(action: {
+                                buttonTapped(label)
+                            }) {
+                                Text(label)
+                                    .font(.system(size: 36))
+                                    .frame(width: label == "0" ? 180 : 85, height: 85)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(35)
+                            }
                         }
                     }
                 }
             }
+            //ボタンスペース
         }
-        .padding()
     }
     // ボタンが押された時の処理
     func buttonTapped(_ label: String) {
@@ -59,20 +70,18 @@ struct ContentView: View {
         case "C":
             inputText = "0"
         case "=":
-            // 簡単な例（本格的な計算はあとで追加）
-            inputText = "計算中…"
+            inputText = "0"
         default:
             if inputText == "0" {
                 inputText = label
-                tax8 = (Double(inputText) ?? 0) * 1.08
-                tax10 = (Double(inputText) ?? 0) * 1.10
-
             } else {
                 inputText += label
-                tax8 = (Double(inputText) ?? 0) * 1.08
-                tax10 = (Double(inputText) ?? 0) * 1.10
             }
         }
+        //共通処理
+        tax8 = (Double(inputText) ?? 0) * 1.08
+        tax10 = (Double(inputText) ?? 0) * 1.10
+
     }
 }
 
