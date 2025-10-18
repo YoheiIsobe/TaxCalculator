@@ -8,25 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var inputText = ""   // ← 入力専用
+    @State private var inputText = ""
     @State private var tax0 = "0"
     @State private var tax8 = "0"
     @State private var tax10 = "0"
-
-    //Add
-    let formatter = NumberFormatter()
-    @State var ClacFlg = false
     @State private var saveText = 0.0
+    @State var ClacFlg = false
     @State var flg = 0
-    //Add
 
-    let buttons = [
+    private let formatter = NumberFormatter()
+    private let buttons = [
         ["7", "8", "9", "÷"],
         ["4", "5", "6", "x"],
         ["1", "2", "3", "+"],
         ["0", "C", "="]
     ]
 
+    //ディスプレイ
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea() // 背景を黒に
@@ -35,38 +33,10 @@ struct ContentView: View {
 
                 //金額表示スペース
                 VStack(alignment: .leading, spacing: 25) {
-                    HStack {
-                        Text("  0%：")
-                            .font(.system(size: 36, weight: .medium, design: .rounded))
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text(tax0)
-                            .monospacedDigit()
-                            .font(.system(size: 40, weight: .medium, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    HStack {
-                        Text("  8%：")
-                            .font(.system(size: 36, weight: .medium, design: .rounded))
-                            .foregroundColor(.yellow)
-                        Spacer()
-                        Text(tax8)
-                            .monospacedDigit()
-                            .font(.system(size: 40, weight: .medium, design: .rounded))
-                            .foregroundColor(.yellow)
-                    }
-                    HStack {
-                        Text("10%：")
-                            .font(.system(size: 36, weight: .medium, design: .rounded))
-                            .foregroundColor(.red)
-                        Spacer()
-                        Text(tax10)
-                            .monospacedDigit()
-                            .font(.system(size: 40, weight: .medium, design: .rounded))
-                            .foregroundColor(.red)
-                    }
+                    displayRow(label: "  0%", value: tax0, color: .white)
+                    displayRow(label: "  8%", value: tax8, color: .yellow)
+                    displayRow(label: "10%", value: tax10, color: .red)
                 }
-                .font(.system(size: 36))
                 .padding(.horizontal, 20)
                 //金額表示スペース
 
@@ -95,42 +65,48 @@ struct ContentView: View {
             }
         }
     }
+    //ディスプレイ
+    // MARK: - Display Component
+    func displayRow(label: String, value: String, color: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 36, weight: .medium, design: .rounded))
+                .foregroundColor(color)
+            Spacer()
+            Text(value)
+                .monospacedDigit()
+                .font(.system(size: 40, weight: .medium, design: .rounded))
+                .foregroundColor(color)
+        }
+    }
 
     // ボタンが押された時の処理
     func buttonTapped(_ label: String) {
         switch label {
-
         case "÷":
+            operator_Common()
             flg = 3
-            ClacFlg = true
-            saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
-            a()
             break
         case "x":
+            operator_Common()
             flg = 2
-            ClacFlg = true
-            saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
-            a()
             break
         case "+":
-            if ClacFlg == true{
-                Clac()
-            }
+            operator_Common()
             flg = 1
-            ClacFlg = true
-            //カンマ削除
-            saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
-            a()
             break
         case "=":
             Clac()
             flg = 0
+            inputText = "0"
+            saveText = 0.0
             break
         case "C":
-            inputText = "0"
-            if ClacFlg == true {
+            if tax0 == "0" {
                 saveText = 0.0
+                flg = 0
             }
+            inputText = "0"
             tax0 = "0"
             tax8 = "0"
             tax10 = "0"
@@ -163,6 +139,19 @@ struct ContentView: View {
         }
     }
 
+    //演算子共通処理
+    func operator_Common() {
+        if flg > 0{
+            Clac()
+        } else {
+            if inputText != "0" {
+                calculateTax()
+            }
+        }
+        saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
+        ClacFlg = true
+    }
+
     // 税金計算
     func calculateTax() {
         if var value = Double(inputText) {
@@ -178,21 +167,26 @@ struct ContentView: View {
             eightTax = round(eightTax)
             tenTax = round(tenTax)
 
-            tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
-            tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
-            tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
+            if zeroTax > 999999999 {
+                print("a")
+                tax0 = "NaN"
+                tax8 = "NaN"
+                tax10 = "NaN"
+            } else {
+                tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
+                tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
+                tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
+            }
         }
     }
 
     //Add
     func Clac(){
         if var value = Double(inputText) {
-            print("tes1")
             switch(flg){
             case 0:
                 break
             case 1:
-                print("tes2")
                 value = saveText + value
                 break
             case 2:
@@ -217,9 +211,16 @@ struct ContentView: View {
             eightTax = round(eightTax)
             tenTax = round(tenTax)
 
-            tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
-            tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
-            tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
+            if zeroTax > 999999999 {
+                print("a")
+                tax0 = "NaN"
+                tax8 = "NaN"
+                tax10 = "NaN"
+            } else {
+                tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
+                tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
+                tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
+            }
         }
     }
     //Add
@@ -250,14 +251,6 @@ struct ContentView: View {
         TaxClac(Number: zeroTax!)
     }
 */
-
-
-    func a (){
-        if inputText != "" && inputText != "0" {
-            calculateTax()
-            ClacFlg = true
-        }
-    }
 }
 
 
