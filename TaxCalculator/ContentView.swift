@@ -14,7 +14,8 @@ struct ContentView: View {
     @State private var tax10 = "0"
     @State private var saveText = 0.0
     @State var ClacFlg = false
-    @State var flg = 0
+    @State var opType = 0
+    @State var preop = 0
 
     private let formatter = NumberFormatter()
     private let buttons = [
@@ -85,70 +86,72 @@ struct ContentView: View {
         switch label {
         case "÷":
             operator_Common()
-            flg = 3
+            opType = 3
             break
         case "x":
             operator_Common()
-            flg = 2
+            opType = 2
             break
         case "+":
             operator_Common()
-            flg = 1
+            opType = 1
             break
         case "=":
-            Clac()
-            flg = 0
+            operatorClac()
             inputText = "0"
             saveText = 0.0
+            opType = 0
             break
         case "C":
             if tax0 == "0" {
                 saveText = 0.0
-                flg = 0
+                opType = 0
             }
-            inputText = "0"
-            tax0 = "0"
-            tax8 = "0"
-            tax10 = "0"
-            ClacFlg = false
+            clearDisp()
             break
         default:
             //演算子確認
             if ClacFlg == true {
-                inputText = "0"
-                tax0 = "0"
-                tax8 = "0"
-                tax10 = "0"
-                ClacFlg = false
+                clearDisp()
             }
-
             //文字数制限
             if tax0.count >= 11 {
                 return
             }
-
+            //2文字目以降は加算
             if inputText == "0" {
                 inputText = label
-                //税金自動計算
-                calculateTax()
             } else {
                 inputText += label
-                //税金自動計算
-                calculateTax()
             }
+            //税金自動計算
+            calculateTax()
         }
+    }
+
+    //画面をクリアする
+    func clearDisp() {
+        inputText = "0"
+        tax0 = "0"
+        tax8 = "0"
+        tax10 = "0"
+        ClacFlg = false
     }
 
     //演算子共通処理
     func operator_Common() {
-        if flg > 0{
-            Clac()
+        //2回目以降演算子が押された場合、計算する
+        if opType > 0{
+            operatorClac()
+
+        //初めて演算子が押された場合、計算せず画面更新
         } else {
             if inputText != "0" {
                 calculateTax()
             }
         }
         saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
+        preop = opType
         ClacFlg = true
     }
 
@@ -181,9 +184,9 @@ struct ContentView: View {
     }
 
     //Add
-    func Clac(){
+    func operatorClac(){
         if var value = Double(inputText) {
-            switch(flg){
+            switch(opType){
             case 0:
                 break
             case 1:
@@ -223,34 +226,6 @@ struct ContentView: View {
             }
         }
     }
-    //Add
-    
-
-/*
-    //数字ボタン
-    func TapNumButton {
-        if ClacFlg == true {
-            Clear()
-        }
-        ClacFlg = false
-
-        //tax0に書いてある数字
-        guard let labelNum = tax0 else{ return }
-        //文字数制限
-        guard  strlen(labelNum!) < 9 else { return }
-        //今押された数字
-        guard let inputText = label else{ return }
-
-        //加算
-        var zeroTaxString = labelNum + senderNum
-        //カンマ削除
-        zeroTaxString = zeroTaxString.replacingOccurrences(of: ",", with: "")
-        //型変換
-        let zeroTax = Double(zeroTaxString)
-        //税金計算
-        TaxClac(Number: zeroTax!)
-    }
-*/
 }
 
 
@@ -289,19 +264,6 @@ struct ContentView: View {
     }
     //Add
  */
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
 
