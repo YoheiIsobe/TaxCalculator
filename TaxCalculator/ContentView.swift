@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var inputText = ""
+    @State private var inputValue = 0.0
     @State private var tax0 = "0"
     @State private var tax8 = "0"
     @State private var tax10 = "0"
     @State private var saveText = 0.0
     @State var ClacFlg = false
     @State var opType = 0
-    @State var preop = 0
 
     private let formatter = NumberFormatter()
     private let buttons = [
@@ -97,8 +97,10 @@ struct ContentView: View {
             opType = 1
             break
         case "=":
-            operatorClac()
-            inputText = "0"
+            calculateOpe()
+            calculateTax()
+            inputText = ""
+            inputValue = 0.0
             saveText = 0.0
             opType = 0
             break
@@ -124,107 +126,84 @@ struct ContentView: View {
             } else {
                 inputText += label
             }
+            inputValue = Double(inputText) ?? 0
+
             //税金自動計算
             calculateTax()
         }
-    }
-
-    //画面をクリアする
-    func clearDisp() {
-        inputText = "0"
-        tax0 = "0"
-        tax8 = "0"
-        tax10 = "0"
-        ClacFlg = false
     }
 
     //演算子共通処理
     func operator_Common() {
         //2回目以降演算子が押された場合、計算する
         if opType > 0{
-            operatorClac()
+            calculateOpe()
+            calculateTax()
 
-        //初めて演算子が押された場合、計算せず画面更新
+        //初めて演算子が押されたときは、画面更新のみ
         } else {
-            if inputText != "0" {
+            if inputValue != 0.0 {
                 calculateTax()
             }
         }
+
+        //現在の値を保存
         saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
-        preop = opType
         ClacFlg = true
     }
 
-    // 税金計算
+    //税金計算
     func calculateTax() {
-        if var value = Double(inputText) {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.groupingSeparator = ","
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
 
-            var zeroTax = value
-            var eightTax = value * 1.08
-            var tenTax = value * 1.10
+        var zeroTax = inputValue
+        var eightTax = inputValue * 1.08
+        var tenTax = inputValue * 1.10
 
-            zeroTax = round(zeroTax)
-            eightTax = round(eightTax)
-            tenTax = round(tenTax)
+        zeroTax = round(zeroTax)
+        eightTax = round(eightTax)
+        tenTax = round(tenTax)
 
-            if zeroTax > 999999999 {
-                print("a")
-                tax0 = "NaN"
-                tax8 = "NaN"
-                tax10 = "NaN"
-            } else {
-                tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
-                tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
-                tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
-            }
+        if zeroTax > 999999999 {
+            tax0 = "NaN"
+            tax8 = "NaN"
+            tax10 = "NaN"
+        } else {
+            tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
+            tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
+            tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
         }
     }
 
-    //Add
-    func operatorClac(){
-        if var value = Double(inputText) {
-            switch(opType){
-            case 0:
-                break
-            case 1:
-                value = saveText + value
-                break
-            case 2:
-                value = saveText * value
-                break
-            case 3:
-                value = saveText / value
-                break
-            default:
-                break
-            }
-
-            var zeroTax = value
-            var eightTax = value * 1.08
-            var tenTax = value * 1.10
-
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.groupingSeparator = ","
-
-            zeroTax = round(zeroTax)
-            eightTax = round(eightTax)
-            tenTax = round(tenTax)
-
-            if zeroTax > 999999999 {
-                print("a")
-                tax0 = "NaN"
-                tax8 = "NaN"
-                tax10 = "NaN"
-            } else {
-                tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
-                tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
-                tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
-            }
+    //演算子計算
+    func calculateOpe() {
+        switch(opType){
+        case 0:
+            break
+        case 1:
+            inputValue = saveText + inputValue
+            break
+        case 2:
+            inputValue = saveText * inputValue
+            break
+        case 3:
+            inputValue = saveText / inputValue
+            break
+        default:
+            break
         }
+    }
+
+    //画面をクリアする
+    func clearDisp() {
+        inputText = ""
+        inputValue = 0.0
+        tax0 = "0"
+        tax8 = "0"
+        tax10 = "0"
+        ClacFlg = false
     }
 }
 
