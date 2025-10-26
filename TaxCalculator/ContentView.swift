@@ -16,7 +16,6 @@ struct ContentView: View {
     @State private var saveText = 0.0
     @State var ClacFlg = false
     @State var opType = 0
-    @State var preopType = 0
 
     private let formatter = NumberFormatter()
     private let buttons = [
@@ -98,12 +97,15 @@ struct ContentView: View {
             opType = 1
             break
         case "=":
-            calculateOpe()
-            calculateTax()
-            inputText = ""
-            inputValue = 0.0
-            saveText = 0.0
-            opType = 0
+            if opType != 0 && ClacFlg == false {
+                calculateOpe()
+                calculateTax()
+                inputText = ""
+                inputValue = 0.0
+                saveText = 0.0
+                opType = 0
+                ClacFlg = false
+            }
             break
         case "C":
             if tax0 == "0" {
@@ -139,7 +141,7 @@ struct ContentView: View {
     //演算子共通処理
     func operator_Common() {
         //演算値の後に異なる演算値が押された場合
-        if ClacFlg == true && preopType != opType {
+        if ClacFlg == true{
             print("異なる演算子が入力されました")
         } else {
             //2回目以降演算子が押された場合、計算する
@@ -158,7 +160,6 @@ struct ContentView: View {
         //現在の値を保存
         saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
         ClacFlg = true
-        preopType = preopType
     }
 
     //税金計算
