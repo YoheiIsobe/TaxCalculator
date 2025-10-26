@@ -17,7 +17,13 @@ struct ContentView: View {
     @State var ClacFlg = false
     @State var opType = 0
 
-    private let formatter = NumberFormatter()
+    private let formatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.groupingSeparator = ","
+        return f
+    }()
+
     private let buttons = [
         ["7", "8", "9", "÷"],
         ["4", "5", "6", "x"],
@@ -55,6 +61,7 @@ struct ContentView: View {
                                         .font(.system(size: 36))
                                         .frame(width: label == "0" ? 180 : 85, height: 85)
                                         .background(Color.gray.opacity(0.2))
+                                        .overlay(RoundedRectangle(cornerRadius: 35).stroke(Color.white.opacity(0.2)))
                                         .cornerRadius(35)
                                         .foregroundColor(.white)
                                 }
@@ -137,6 +144,7 @@ struct ContentView: View {
             calculateTax()
         }
     }
+    
 
     //演算子共通処理
     func operator_Common() {
@@ -158,16 +166,18 @@ struct ContentView: View {
         }
 
         //現在の値を保存
-        saveText = Double(tax0.replacingOccurrences(of: ",", with: ""))!
+        if let value = Double(tax0.replacingOccurrences(of: ",", with: "")) {
+            saveText = value
+        } else {
+            saveText = 0.0
+        }
+
+        //演算子フラグ(+/x/÷)を有効
         ClacFlg = true
     }
 
     //税金計算
     func calculateTax() {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = ","
-
         var zeroTax = inputValue
         var eightTax = inputValue * 1.08
         var tenTax = inputValue * 1.10
@@ -221,38 +231,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-/*
-    /*----------------関数-------------------*/
-
-    //Add
-    func transform() -> Double {
-        //tax0に書いてある数字
-        guard let labelNum = tax0.text else{
-            return 0.0
-        }
-        //カンマ削除
-        let zeroTaxString = labelNum.replacingOccurrences(of: ",", with: "")
-
-        //型変換
-        return Double(zeroTaxString)!
-    }
-    //Add
-
-    //Add
-    func TaxClac(Number: Double){
-        let zeroTax = Number
-        var eightTax = Number * 1.08
-        var tenTax = Number * 1.10
-
-        eightTax = round(eightTax)
-        tenTax = round(tenTax)
-
-        tax0.text = String(formatter.string(from: zeroTax as NSNumber)!)
-        tax8.text = String(formatter.string(from: eightTax as NSNumber)!)
-        tax10.text = String(formatter.string(from: tenTax as NSNumber)!)
-    }
-    //Add
- */
 
 /*
 
@@ -274,10 +252,6 @@ class ViewController: UIViewController, GADBannerViewDelegate  {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        formatter.numberStyle = NumberFormatter.Style.decimal
-        formatter.groupingSeparator = ","
-        formatter.groupingSize = 3
-
         //広告開始
         bannerView = GADBannerView(adSize: kGADAdSizeBanner)
         //addBannerViewToView(bannerView)
@@ -289,93 +263,5 @@ class ViewController: UIViewController, GADBannerViewDelegate  {
         bannerView.load(GADRequest())
         //広告終わり
     }
-
-    //数字ボタン
-    @IBAction func TapNumButton(_ sender: UIButton) {
-        if ClacFlg == true {
-            Clear()
-        }
-        ClacFlg = false
-
-        //tax0に書いてある数字
-        guard let labelNum = tax0.text else{
-            return
-        }
-        //文字数制限
-        guard  strlen(tax0.text!) < 9 else {
-            return
-        }
-        //今押された数字
-        guard let senderNum = sender.titleLabel?.text else{
-            return
-        }
-        //加算
-        var zeroTaxString = labelNum + senderNum
-        //カンマ削除
-        zeroTaxString = zeroTaxString.replacingOccurrences(of: ",", with: "")
-        //型変換
-        let zeroTax = Double(zeroTaxString)
-        //税金計算
-        TaxClac(Number: zeroTax!)
-    }
-
-    //クリアボタン
-    @IBAction func TapClearButton(_ sender: UIButton) {
-        if ClacFlg == true {
-            saveText = 0.0
-        }
-        Clear()
-        ClacFlg = false
-    }
-
-    func Clear(){
-        tax0.text = ""
-        tax8.text = ""
-        tax10.text = ""
-    }
-
-    func TaxClac(Number: Double){
-        let zeroTax = Number
-        var eightTax = Number * 1.08
-        var tenTax = Number * 1.10
-
-        eightTax = round(eightTax)
-        tenTax = round(tenTax)
-
-        tax0.text = String(formatter.string(from: zeroTax as NSNumber)!)
-        tax8.text = String(formatter.string(from: eightTax as NSNumber)!)
-        tax10.text = String(formatter.string(from: tenTax as NSNumber)!)
-    }
-
-    @IBAction func pushDivide(_ sender: Any) {
-        flg = 3
-        a()
-    }
-
-    @IBAction func pushMultiply(_ sender: Any) {
-        flg = 2
-        a()
-    }
-
-    @IBAction func pushAdd(_ sender: Any) {
-        flg = 1
-        a()
-    }
-
-    func a (){
-        if tax0.text != "" && tax0.text != "0" {
-            saveText = transform()
-            ClacFlg = true
-        }
-    }
-
-
-
-    @IBAction func pushEqual(_ sender: Any) {
-        Clac()
-        flg = 0
-    }
-
-
 
 */
