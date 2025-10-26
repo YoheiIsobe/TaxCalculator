@@ -24,9 +24,11 @@ struct ContentView: View {
         return f
     }()
 
+
     private let buttons = [
-        ["7", "8", "9", "÷"],
-        ["4", "5", "6", "x"],
+        ["", "", "", "÷"],
+        ["7", "8", "9", "x"],
+        ["4", "5", "6", "-"],
         ["1", "2", "3", "+"],
         ["0", "C", "="]
     ]
@@ -47,23 +49,27 @@ struct ContentView: View {
                 .padding(.horizontal, 20)
                 //金額表示スペース
 
-                Spacer()
-
                 //ボタンスペース
-                VStack(spacing: 10) { // ← 縦の間隔を狭く
+                VStack(spacing: 10) {
                     ForEach(buttons, id: \.self) { row in
                         HStack(spacing: 10) {
                             ForEach(row, id: \.self) { label in
-                                Button(action: {
-                                    buttonTapped(label)
-                                }) {
-                                    Text(label)
-                                        .font(.system(size: 36))
-                                        .frame(width: label == "0" ? 180 : 85, height: 85)
-                                        .background(Color.gray.opacity(0.2))
-                                        .overlay(RoundedRectangle(cornerRadius: 35).stroke(Color.white.opacity(0.2)))
-                                        .cornerRadius(35)
-                                        .foregroundColor(.white)
+                                if label.isEmpty {
+                                    Rectangle()
+                                        .frame(width: 85, height: 85)
+                                        .opacity(0)
+                                } else {
+                                    Button(action: {
+                                        buttonTapped(label)
+                                    }) {
+                                        Text(label)
+                                            .font(.system(size: 36))
+                                            .frame(width: label == "0" ? 180 : 85, height: 85)
+                                            .background(Color.gray.opacity(0.2))
+                                            .overlay(RoundedRectangle(cornerRadius: 35).stroke(Color.white.opacity(0.2)))
+                                            .cornerRadius(35)
+                                            .foregroundColor(.white)
+                                    }
                                 }
                             }
                         }
@@ -93,9 +99,13 @@ struct ContentView: View {
         switch label {
         case "÷":
             operator_Common()
-            opType = 3
+            opType = 4
             break
         case "x":
+            operator_Common()
+            opType = 3
+            break
+        case "-":
             operator_Common()
             opType = 2
             break
@@ -120,6 +130,17 @@ struct ContentView: View {
                 opType = 0
             }
             clearDisp()
+            break
+        case "AC":
+            break
+        case "<":
+            //基本的には動くがバグあり
+            if !inputText.isEmpty {
+                inputText.removeLast()
+                if inputText.isEmpty { inputText = "0" }
+                inputValue = Double(inputText) ?? 0
+                calculateTax()
+            }
             break
         default:
             //演算子確認
@@ -206,9 +227,12 @@ struct ContentView: View {
             inputValue = saveText + inputValue
             break
         case 2:
-            inputValue = saveText * inputValue
+            inputValue = saveText - inputValue
             break
         case 3:
+            inputValue = saveText * inputValue
+            break
+        case 4:
             inputValue = saveText / inputValue
             break
         default:
