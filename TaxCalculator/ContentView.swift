@@ -53,13 +53,15 @@ struct ContentView: View {
                 Spacer()
 
                 //金額表示スペース
-                VStack(alignment: .leading, spacing: 25) {
+                VStack(alignment: .leading, spacing: 20) {
                     historyView(save: saveText, current: newText)
+                        .font(.system(size: 20))
+                        .padding(.top, 8)
                     displayRow(label: "0%  ", value: tax0, color: .white)
                     displayRow(label: "8%  ", value: tax8, color: .yellow)
                     displayRow(label: "10%", value: tax10, color: .red)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 10)
                 //金額表示スペース
 
                 //ボタンスペース
@@ -261,7 +263,7 @@ struct ContentView: View {
     func operator_Common() {
         //演算値の後に異なる演算値が押された場合
         if ClacFlg == true{
-            print("異なる演算子が入力されました")
+            print("連続して演算子が入力されました")
         } else {
             //2回目以降演算子が押された場合、計算する
             if opType > 0{
