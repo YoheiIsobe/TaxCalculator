@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import GoogleMobileAds
 
 @main
-struct TaxCalculatorApp: App {
+struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

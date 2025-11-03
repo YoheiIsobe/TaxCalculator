@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleMobileAds
 
 struct ContentView: View {
     @State private var inputText = ""
@@ -27,8 +28,8 @@ struct ContentView: View {
 
     private let buttons = [
         ["", "", "", "÷"],
-        ["7", "8", "9", "x"],
-        ["4", "5", "6", "-"],
+        ["7", "8", "9", "×"],
+        ["4", "5", "6", "−"],
         ["1", "2", "3", "+"],
         ["0", "C", "="]
     ]
@@ -36,14 +37,20 @@ struct ContentView: View {
     //ディスプレイ
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea() // 背景を黒に
+            Color.black.ignoresSafeArea()
             VStack() {
+                //テスト広告
+                //AdBannerView(adUnitID: "ca-app-pub-3940256099942544/2934735716")
+                //本番広告
+                AdBannerView(adUnitID: "ca-app-pub-4013798308034554/7920663953")
+                    .frame(width: 320, height: 50)
+
                 Spacer()
 
                 //金額表示スペース
                 VStack(alignment: .leading, spacing: 25) {
-                    displayRow(label: "  0%", value: tax0, color: .white)
-                    displayRow(label: "  8%", value: tax8, color: .yellow)
+                    displayRow(label: "0%  ", value: tax0, color: .white)
+                    displayRow(label: "8%  ", value: tax8, color: .yellow)
                     displayRow(label: "10%", value: tax10, color: .red)
                 }
                 .padding(.horizontal, 20)
@@ -56,16 +63,16 @@ struct ContentView: View {
                             ForEach(row, id: \.self) { label in
                                 if label.isEmpty {
                                     Rectangle()
-                                        .frame(width: 85, height: 85)
+                                        .frame(width: 84, height: 84)
                                         .opacity(0)
                                 } else {
                                     Button(action: {
                                         buttonTapped(label)
                                     }) {
                                         Text(label)
-                                            .font(.system(size: 36))
-                                            .frame(width: label == "0" ? 180 : 85, height: 85)
-                                            .background(Color.gray.opacity(0.2))
+                                            .font(.system(size: fontSize(for: label), weight: .medium))
+                                            .frame(width: label == "0" ? 180 : 84, height: 84)
+                                            .background(buttonColor(for: label))
                                             .overlay(RoundedRectangle(cornerRadius: 35).stroke(Color.white.opacity(0.2)))
                                             .cornerRadius(35)
                                             .foregroundColor(.white)
@@ -79,17 +86,45 @@ struct ContentView: View {
             }
         }
     }
+
+    //ボタンの色
+    func buttonColor(for label: String) -> Color {
+        switch label {
+        case "÷", "×", "−", "+", "=":
+            return Color.orange // 演算子
+        case "C", "AC":
+            return Color(white: 0.4) // 薄いグレー
+        default:
+            return Color(white: 0.2) // 濃いグレー（数字）
+        }
+    }
+
+    //ボタンのフォントサイズ
+    func fontSize(for label: String) -> CGFloat {
+        switch label {
+        case "÷", "×", "−", "+", "=":
+            return 44  // 演算子を大きく
+        default:
+            return 34
+        }
+    }
+
     //ディスプレイ
     // MARK: - Display Component
     func displayRow(label: String, value: String, color: Color) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 36, weight: .medium, design: .rounded))
+                .font(.system(size: 24, weight: .medium))
                 .foregroundColor(color)
             Spacer()
             Text(value)
                 .monospacedDigit()
-                .font(.system(size: 40, weight: .medium, design: .rounded))
+                .font(.system(size: 40, weight: .medium))
+                .foregroundColor(color)
+            Text("円")
+                .padding(.top)
+                .monospacedDigit()
+                .font(.system(size: 20, weight: .medium))
                 .foregroundColor(color)
         }
     }
@@ -101,11 +136,11 @@ struct ContentView: View {
             operator_Common()
             opType = 4
             break
-        case "x":
+        case "×":
             operator_Common()
             opType = 3
             break
-        case "-":
+        case "−":
             operator_Common()
             opType = 2
             break
@@ -252,40 +287,8 @@ struct ContentView: View {
 }
 
 
+
 #Preview {
     ContentView()
 }
 
-/*
-
-import UIKit
-import GoogleMobileAds
-
-class ViewController: UIViewController, GADBannerViewDelegate  {
-
-    @IBOutlet weak var tax0: UILabel!
-    @IBOutlet weak var tax8: UILabel!
-    @IBOutlet weak var tax10: UILabel!
-    let formatter = NumberFormatter()
-
-
-
-    //バナー広告
-    var bannerView: GADBannerView!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        //広告開始
-        bannerView = GADBannerView(adSize: kGADAdSizeBanner)
-        //addBannerViewToView(bannerView)
-        //本番　ca-app-pub-4013798308034554/7920663953
-        //テスト　ca-app-pub-3940256099942544/2934735716
-        //bannerView.adUnitID = "ca-app-pub-4013798308034554/7920663953"
-        //bannerView.adUnitID = "ca-app-pub-3940256099942544/2934735716"  //テスト
-        bannerView.rootViewController = self
-        bannerView.load(GADRequest())
-        //広告終わり
-    }
-
-*/
