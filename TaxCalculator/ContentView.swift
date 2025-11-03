@@ -15,8 +15,11 @@ struct ContentView: View {
     @State private var tax8 = "0"
     @State private var tax10 = "0"
     @State private var saveText = 0.0
+    @State private var newText = 0.0
     @State var ClacFlg = false
     @State var opType = 0
+    @State private var clearLabel = "AC"
+
 
     private let formatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -26,13 +29,15 @@ struct ContentView: View {
     }()
 
 
-    private let buttons = [
-        ["", "", "", "÷"],
-        ["7", "8", "9", "×"],
-        ["4", "5", "6", "−"],
-        ["1", "2", "3", "+"],
-        ["0", "C", "="]
-    ]
+    private var buttons: [[String]] {
+        [
+            ["", "", "", "÷"],
+            ["7", "8", "9", "×"],
+            ["4", "5", "6", "−"],
+            ["1", "2", "3", "+"],
+            ["0", clearLabel, "="]
+        ]
+    }
 
     //ディスプレイ
     var body: some View {
@@ -49,6 +54,7 @@ struct ContentView: View {
 
                 //金額表示スペース
                 VStack(alignment: .leading, spacing: 25) {
+                    historyView(save: saveText, current: newText)
                     displayRow(label: "0%  ", value: tax0, color: .white)
                     displayRow(label: "8%  ", value: tax8, color: .yellow)
                     displayRow(label: "10%", value: tax10, color: .red)
@@ -109,6 +115,34 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - 履歴表示 HStack
+    func historyView(save: Double, current: Double) -> some View {
+        HStack {
+            if opType != 0 {
+                Text(formatter.string(from: NSNumber(value: save)) ?? "0")
+                    .foregroundColor(.gray)
+            } else {
+                Text(tax0)
+                    .foregroundColor(.gray)
+            }
+
+            if opType != 0 {
+                Text(operatorSymbol())
+                    .foregroundColor(.gray)
+            } else {
+                Text(operatorSymbol())
+                    .foregroundColor(.black)
+            }
+
+            if current != 0 {
+                Text(formatter.string(from: NSNumber(value: current)) ?? "0")
+                    .foregroundColor(.gray)
+            } else {
+                Text(formatter.string(from: NSNumber(value: current)) ?? "0")
+                    .foregroundColor(.black)
+            }
+        }
+    }
     //ディスプレイ
     // MARK: - Display Component
     func displayRow(label: String, value: String, color: Color) -> some View {
@@ -155,18 +189,35 @@ struct ContentView: View {
                 inputText = ""
                 inputValue = 0.0
                 saveText = 0.0
+                newText = 0.0
                 opType = 0
                 ClacFlg = false
+                clearLabel = "AC"
             }
             break
         case "C":
-            if tax0 == "0" {
-                saveText = 0.0
-                opType = 0
+            if opType > 0 {
+                tax0 = "0"
+                tax8 = "0"
+                tax10 = "0"
+                inputText = ""
+                inputValue = 0.0
+                newText = 0.0
             }
-            clearDisp()
+            inputText = ""
+            inputValue = 0.0
+            clearLabel = "AC"
             break
         case "AC":
+            saveText = 0.0
+            newText = 0.0
+            opType = 0
+            inputText = ""
+            inputValue = 0.0
+            tax0 = "0"
+            tax8 = "0"
+            tax10 = "0"
+            ClacFlg = false
             break
         case "<":
             //基本的には動くがバグあり
@@ -178,12 +229,17 @@ struct ContentView: View {
             }
             break
         default:
+            //
+            if clearLabel == "AC" {
+                clearLabel = "C"
+            }
+
             //演算子確認
             if ClacFlg == true {
                 clearDisp()
             }
             //文字数制限
-            if tax0.count >= 11 {
+            if tax0.count >= 10 {
                 return
             }
             //2文字目以降は加算
@@ -200,7 +256,6 @@ struct ContentView: View {
             calculateTax()
         }
     }
-    
 
     //演算子共通処理
     func operator_Common() {
@@ -213,7 +268,7 @@ struct ContentView: View {
                 calculateOpe()
                 calculateTax()
 
-                //初めて演算子が押されたときは、画面更新のみ
+            //初めて演算子が押されたときは、画面更新のみ
             } else {
                 if inputValue != 0.0 {
                     calculateTax()
@@ -227,6 +282,8 @@ struct ContentView: View {
         } else {
             saveText = 0.0
         }
+
+        newText = 0.0
 
         //演算子フラグ(+/x/÷)を有効
         ClacFlg = true
@@ -242,7 +299,7 @@ struct ContentView: View {
         eightTax = round(eightTax)
         tenTax = round(tenTax)
 
-        if zeroTax > 999999999 {
+        if zeroTax > 999999999 || zeroTax < -999999999 {
             tax0 = "NaN"
             tax8 = "NaN"
             tax10 = "NaN"
@@ -250,6 +307,13 @@ struct ContentView: View {
             tax0 = formatter.string(from: NSNumber(value: zeroTax)) ?? ""
             tax8 = formatter.string(from: NSNumber(value: eightTax)) ?? ""
             tax10 = formatter.string(from: NSNumber(value: tenTax)) ?? ""
+        }
+
+        //入力値を保存
+        if opType != 0 {
+            if let value = Double(tax0.replacingOccurrences(of: ",", with: "")) {
+                newText = value
+            }
         }
     }
 
@@ -284,9 +348,18 @@ struct ContentView: View {
         tax10 = "0"
         ClacFlg = false
     }
+
+    //演算子を文字に変換
+    func operatorSymbol() -> String {
+        switch opType {
+        case 1: return "+"
+        case 2: return "−"
+        case 3: return "×"
+        case 4: return "÷"
+        default: return ""
+        }
+    }
 }
-
-
 
 #Preview {
     ContentView()
